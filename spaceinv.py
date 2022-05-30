@@ -1716,25 +1716,25 @@ class Ship:
     #    x, y = self.position
 
     def move(self):
-        self.projetil_esquerda()
-        self.projetil_direita()
-
-    def move_sides(self, direction, screen_size):
-        if self.status in (0, 1):
-            self.position[0] += direction * self.speed
-            if self.position[0] < 0:
-                self.position[0] = 0
-            if self.position[0] > screen_size[0] - self.size[0]:
-                self.position[0] = screen_size[0] - self.size[0]
-            self.rect = pygame.Rect(self.position, self.size)
-            self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2, self.shield_size)
+        self.mybehaviour.run()
 
     def defineBehaviourTree(self):
-        return Sequence(Selector(Sequence(Atomic(self.projetil_centro),
-                                          Atomic(False),
-                                          )),
-                        Selector(Sequence(Atomic(False),
-                                          )))
+        return Sequence(Selector(Sequence(Atomic(self.projetil_esquerda),
+                                          Atomic(self.move_sides_direita),
+                                          ),
+                                 Sequence(Atomic(self.projetil_direita),
+                                          Atomic(self.move_sides_esquerda)
+                                          ),
+                                 Sequence(Atomic(self.aliens_direction_right),
+                                          Atomic(self.intersect_left_line),
+                                          Atomic(self.disparar)),
+                                 Sequence(Atomic(self.aliens_direction_left),
+                                          Atomic(self.intersect_right_line),
+                                          Atomic(self.disparar)),
+                                 Sequence(),
+                                 Sequence()
+                                 )
+                        )
 
     # valor do centro da nave para o x
     def space_ship_center_x(self):
@@ -1747,13 +1747,13 @@ class Ship:
     def capsula(self):
         # Ponto central
         ponto_central_x = self.space_ship_center_x()
-        ponto_central_y = self.space_ship_center_y() - 200
+        ponto_central_y = self.space_ship_center_y() - 100
         # Pontos para diagonal esquerda
         diagonal_esquerda_x = self.position[0]
-        diagonal_esquerda_y = self.space_ship_center_y() - 150
+        diagonal_esquerda_y = self.space_ship_center_y() - 50
         # Pontos para diagonal direita
         diagonal_direita_x = self.position[0] + self.size[0]
-        diagonal_direita_y = self.space_ship_center_y() - 150
+        diagonal_direita_y = self.space_ship_center_y() - 50
         return ponto_central_x, ponto_central_y, diagonal_esquerda_x, diagonal_esquerda_y, diagonal_direita_x, diagonal_direita_y
 
     def line_points(self, x1, y1, x2, y2):
@@ -1793,20 +1793,71 @@ class Ship:
         for p in range(len(self.alien_bullets_list)):
             for i in range(len(line_points)):
                 if self.alien_bullets_list[p].rect.collidepoint(line_points[i]):
-                    self.move_sides(1, screen.get_size())
+                    return True
+        return False
+
+    def move_sides_direita(self):
+        direction = 1
+        screen_size = screen.get_size()
+        if self.status in (0, 1):
+            self.position[0] += direction * self.speed
+            if self.position[0] < 0:
+                self.position[0] = 0
+            if self.position[0] > screen_size[0] - self.size[0]:
+                self.position[0] = screen_size[0] - self.size[0]
+            self.rect = pygame.Rect(self.position, self.size)
+            self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2, self.shield_size)
 
     def projetil_direita(self):  # Funciona
         line_points = self.line_points(self.capsula()[0], self.capsula()[1], self.capsula()[4], self.capsula()[5])
         for p in range(len(self.alien_bullets_list)):
             for i in range(len(line_points)):
                 if self.alien_bullets_list[p].rect.collidepoint(line_points[i]):
-                    self.move_sides(-1, screen.get_size())
+                    return True
+        return False
 
-    def projetil_centro(self):
-        pass
+    def move_sides_esquerda(self):
+        direction = -1
+        screen_size = screen.get_size()
+        if self.status in (0, 1):
+            self.position[0] += direction * self.speed
+            if self.position[0] < 0:
+                self.position[0] = 0
+            if self.position[0] > screen_size[0] - self.size[0]:
+                self.position[0] = screen_size[0] - self.size[0]
+            self.rect = pygame.Rect(self.position, self.size)
+            self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2, self.shield_size)
+
+    def aliens_direction_left(self):
+        if len(self.aliens_list) > 0:
+            if self.aliens_list[0].direction == -1:
+                return True
+        return False
+
+    def aliens_direction_right(self):
+        if len(self.aliens_list) > 0:
+            if self.aliens_list[0].direction == 1:
+                return True
+        return False
+
+    def intersect_left_line(self):
+        line_points = self.line_points(self.position[0], self.position[1], self.position[0], self.position[1] - 800)
+        for i in range(len(self.aliens_list)):
+            for p in range(len(line_points)):
+                if self.aliens_list[i].rect.collidepoint(line_points[p]):
+                    return True
+        return False
+
+    def intersect_right_line(self):
+        line_points = self.line_points(self.position[0] + self.size[0], self.position[1], self.position[0] + self.size[0], self.position[1] - 800)
+        for i in range(len(self.aliens_list)):
+            for p in range(len(line_points)):
+                if self.aliens_list[i].rect.collidepoint(line_points[p]):
+                    return True
+        return False
 
     def disparar(self):
-        pass
+        return self.shoot(pygame.time.get_ticks())
 
     def draw(self, screen):
         # Diagonal esquerda
@@ -1818,8 +1869,16 @@ class Ship:
         # Linha central
         pygame.draw.line(screen, (255, 0, 0), (self.space_ship_center_x(), self.space_ship_center_y() - 50),
                          (self.space_ship_center_x(), self.space_ship_center_y() - 800))
-        # Linha reta
+        # Linha reta horizontal
         pygame.draw.line(screen, (255, 0, 0), (200, 500), (800, 500))
+
+        # Linha esquerda vertical
+        pygame.draw.line(screen, (255, 0, 0), (self.position[0], self.position[1]),
+                         (self.position[0], self.position[1] - 800))
+
+        # Linha direita vertical
+        pygame.draw.line(screen, (255, 0, 0), (self.position[0] + self.size[0], self.position[1]), (self.position[0] + self.size[0], self.position[1] - 800))
+
         screen.blit(self.pic, self.position.astype(np.int16))
         if self.shield:
             screen.blit(self.shield_pic, self.shield_rect)
