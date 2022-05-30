@@ -408,6 +408,7 @@ class SpaceInvaders:
 
             else:  # actual game mode ('game')
                 self.ship.alien_bullets_list = self.alien_bullets
+                self.ship.aliens_list = self.aliens
                 self.ship.move()  ##################################
                 self.move_stars(time, prev_time)
                 self.plot_stars()
@@ -1691,7 +1692,8 @@ class Ship:
         self.pic_small = self.pic  # pygame.transform.scale(self.pic, (self.size[0] // 2, self.size[1] // 2))
         self.pic_small_size = self.pic_small.get_size()
         self.mybehaviour = self.defineBehaviourTree()
-        self.alien_bullets_list = []
+        self.alien_bullets_list = []  # Lista com tiros dos inimigos
+        self.aliens_list = []  # Lista com os inimigos
 
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -1786,14 +1788,14 @@ class Ship:
             points.reverse()
         return points
 
-    def projetil_esquerda(self): # Funciona
+    def projetil_esquerda(self):  # Funciona
         line_points = self.line_points(self.capsula()[0], self.capsula()[1], self.capsula()[2], self.capsula()[3])
         for p in range(len(self.alien_bullets_list)):
             for i in range(len(line_points)):
                 if self.alien_bullets_list[p].rect.collidepoint(line_points[i]):
                     self.move_sides(1, screen.get_size())
 
-    def projetil_direita(self): # Funciona
+    def projetil_direita(self):  # Funciona
         line_points = self.line_points(self.capsula()[0], self.capsula()[1], self.capsula()[4], self.capsula()[5])
         for p in range(len(self.alien_bullets_list)):
             for i in range(len(line_points)):
