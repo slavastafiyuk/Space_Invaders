@@ -1936,6 +1936,12 @@ class Ship:
         pygame.draw.line(screen, (255, 0, 0), (self.position[0] + self.size[0], self.position[1]),
                          (self.position[0] + self.size[0], self.position[1] - 800))
 
+        # Rectangulo a direita da nave
+        pygame.draw.rect(screen, (255, 0, 0),
+                         pygame.Rect(self.position[0] + self.size[0], self.position[1] - self.size[1], self.size[0], self.size[1]*2))
+        # Rectangulo a esquerda da nava
+        pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(self.position[0]-self.size[0], self.position[1] - self.size[1], self.size[0], self.size[1]*2))
+
         screen.blit(self.pic, self.position.astype(np.int16))
         if self.shield:
             screen.blit(self.shield_pic, self.shield_rect)
