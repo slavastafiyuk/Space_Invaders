@@ -1900,6 +1900,10 @@ class Ship:
                     return True
         return False
 
+    def intersect_right_square_ship(self):
+        right_sqare_ship = pygame.Rect()
+
+
     def intersect_right_line(self):
         line_points = self.line_points(self.position[0] + self.size[0], self.position[1],
                                        self.position[0] + self.size[0], self.position[1] - 800)
@@ -1938,7 +1942,7 @@ class Ship:
 
         # Rectangulo a direita da nave
         pygame.draw.rect(screen, (255, 0, 0),
-                         pygame.Rect(self.position[0] + self.size[0], self.position[1] - self.size[1], self.size[0], self.size[1]*2))
+                         pygame.Rect(self.position[0] + self.size[0], self.position[1], self.size[0], self.size[1]))
         # Rectangulo a esquerda da nava
         pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(self.position[0]-self.size[0], self.position[1] - self.size[1], self.size[0], self.size[1]*2))
 
