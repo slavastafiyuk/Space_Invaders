@@ -1694,8 +1694,10 @@ class Ship:
         self.aliens_list = []  # Lista com os inimigos
         self.alien_escolhido = 0
         self.aliens_target = []
-        self.ufos_target =[]
+        self.ufos_target = []
         self.ufo_bullet_pic = None
+        self.right_square_ship = None
+        self.left_square_ship = None
 
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -1770,22 +1772,41 @@ class Ship:
         diagonal_direita_y_UFO = self.space_ship_center_y() + 5
         return ponto_central_x_UFO, ponto_central_y_UFO, diagonal_direita_x_UFO, diagonal_direita_y_UFO, diagonal_esquerda_x_UFO, diagonal_esquerda_y_UFO
 
+    # def projetil_esquerda_UFO(self):
+    #    line_points = self.line_points(self.capsula_UFO()[0], self.capsula_UFO()[1], self.capsula_UFO()[2],
+    #                                   self.capsula_UFO()[3])
+    #    if self.ufo_bullet_pic is not None:
+    #        for p in range(len(self.alien_bullets_list)):
+    #            for i in range(len(line_points)):
+    #                if self.alien_bullets_list[p].pic == self.ufo_bullet_pic and self.alien_bullets_list[p].rect.collidepoint(line_points[i]):
+    #                    return True
+    #    return False
+    # def projetil_direita_UFO(self):
+    #    line_points = self.line_points(self.capsula_UFO()[0], self.capsula_UFO()[1], self.capsula_UFO()[4],
+    #                                   self.capsula_UFO()[5])
+    #    if self.ufo_bullet_pic is not None:
+    #        # print("o")
+    #        for p in range(len(self.alien_bullets_list)):
+    #            for i in range(len(line_points)):
+    #                if self.alien_bullets_list[p].pic == self.ufo_bullet_pic and self.alien_bullets_list[p].rect.collidepoint(line_points[i]):
+    #                    return True
+    #    return False
+
     def move(self):
-        #self.intersect_left_square_ship()
-        #self.intersect_right_square_ship()
+        self.right_square_ship = pygame.Rect(self.position[0] + self.size[0], self.position[1], self.size[0],
+                                             self.size[1])
+        self.left_square_ship = pygame.Rect(self.position[0] - self.size[0], self.position[1], self.size[0],
+                                            self.size[1])
         self.mybehaviour.run()
 
     def defineBehaviourTree(self):
-        return Sequence(Selector(Sequence(Atomic(self.projetil_esquerda),
-                                          Atomic(self.move_sides_direita),
-                                          ),
-                                 Sequence(Atomic(self.projetil_direita),
-                                          Atomic(self.move_sides_esquerda)
-                                          ),
-                                 Sequence(Atomic(self.projetil_esquerda_UFO),
-                                          Atomic(self.move_sides_direita)),
-                                 Sequence(Atomic(self.projetil_esquerda_UFO),
-                                          Atomic(self.move_sides_esquerda)),
+        return Sequence(Selector(Sequence(Atomic(self.sensor_intersect),
+                                          Atomic(self.desviar)
+                                          )
+                                 # Sequence(Atomic(self.projetil_esquerda_UFO),
+                                 #         Atomic(self.move_sides_direita)),
+                                 # Sequence(Atomic(self.projetil_esquerda_UFO),
+                                 #         Atomic(self.move_sides_esquerda)),
                                  # Sequence(Atomic(self.aliens_direction_right),
                                  #         Atomic(self.intersect_left_line),
                                  #         Atomic(self.disparar)),
@@ -1794,14 +1815,16 @@ class Ship:
                                  #         Atomic(self.disparar)),
                                  # Sequence(Atomic(self.comecar_a_perseguir_alien_mais_perto),
                                  #         Atomic(self.aliens_direction_right),
+                                 #         Atomic(self.intersect_right_square_ship),
                                  #         Atomic(self.atacar_proximo_mov_direita)),
                                  # Sequence(Atomic(self.comecar_a_perseguir_alien_mais_perto),
                                  #         Atomic(self.aliens_direction_left),
+                                 #         Atomic(self.intersect_left_square_ship),
                                  #         Atomic(self.atacar_proximo_mov_esquerda))
                                  )
                         )
 
-    ### VERIFICAÇÃO DOS PROJETEIS (LADO) ###
+    ### VERIFICAÇÃO DOS PROJETEIS (LADO) E DESVIAR E VERIFICAR SE É POSSIVEL DESVIAR PARA O LADO E INTERSECÇÃO DAS BULLETS###
     def projetil_esquerda(self):  # Funciona
         line_points = self.line_points(self.capsula()[0], self.capsula()[1], self.capsula()[2], self.capsula()[3])
         for p in range(len(self.alien_bullets_list)):
@@ -1818,75 +1841,62 @@ class Ship:
                     return True
         return False
 
-    def projetil_esquerda_UFO(self):
-        line_points = self.line_points(self.capsula_UFO()[0], self.capsula_UFO()[1], self.capsula_UFO()[2],
-                                       self.capsula_UFO()[3])
-        if self.ufo_bullet_pic is not None:
-            for p in range(len(self.alien_bullets_list)):
-                for i in range(len(line_points)):
-                    if self.alien_bullets_list[p].pic == self.ufo_bullet_pic and self.alien_bullets_list[p].rect.collidepoint(line_points[i]):
-                        return True
-        return False
-
-    def projetil_direita_UFO(self):
-        line_points = self.line_points(self.capsula_UFO()[0], self.capsula_UFO()[1], self.capsula_UFO()[4],
-                                       self.capsula_UFO()[5])
-        if self.ufo_bullet_pic is not None:
-            print("o")
-            for p in range(len(self.alien_bullets_list)):
-                for i in range(len(line_points)):
-                    if self.alien_bullets_list[p].pic == self.ufo_bullet_pic and self.alien_bullets_list[p].rect.collidepoint(line_points[i]):
-                        return True
-        return False
-
-    # -------------------------------------------------------------------------------------------------------------------
-    ### VERIFICAR SE É POSSIVEL DESVIAR PARA O LADO ###
     def intersect_right_square_ship(self):
-        right_square_ship = pygame.Rect(self.position[0] + self.size[0], self.position[1], self.size[0], self.size[1])
         for i in range(len(self.alien_bullets_list)):
-            if self.alien_bullets_list[i].rect.colliderect(right_square_ship):
-                print("OLA")
-                return False
-        return True
+            if self.alien_bullets_list[i].rect.colliderect(self.right_square_ship):
+                return True
+        return False
 
     def intersect_left_square_ship(self):
-        left_square_ship = pygame.Rect(self.position[0] - self.size[0], self.position[1], self.size[0], self.size[1])
         for i in range(len(self.alien_bullets_list)):
-            if self.alien_bullets_list[i].rect.colliderect(left_square_ship):
-                print("OLA")
-                return False
-        return True
-    # -------------------------------------------------------------------------------------------------------------------
-    ### DESVIAR PARA OS LADOS ###
-    def move_sides_direita(self):
-        screen_size = screen.get_size()
-        direction = 1
-        if self.status in (0, 1):
-            self.position[0] += direction * self.speed
-            if self.position[0] < 0:
-                self.position[0] = 0
-            if self.position[0] > screen_size[0] - self.size[0]:
-                self.position[0] = screen_size[0] - self.size[0]
-            self.rect = pygame.Rect(self.position, self.size)
-            self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2, self.shield_size)
+            if self.alien_bullets_list[i].rect.colliderect(self.left_square_ship):
+                return True
+        return False
 
-    def move_sides_esquerda(self):
-        screen_size = screen.get_size()
-        direction = -1
-        if self.status in (0, 1):
-            self.position[0] += direction * self.speed
-            if self.position[0] < 0:
-                self.position[0] = 0
-            if self.position[0] > screen_size[0] - self.size[0]:
-                self.position[0] = screen_size[0] - self.size[0]
-            self.rect = pygame.Rect(self.position, self.size)
-            self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2, self.shield_size)
-
-    # -------------------------------------------------------------------------------------------------------------------
-    ### VERIFICA SE EXISTE INTERSECÇÃO DAS BULLET COM OS SENSORES MAIS PERTOS ###
-    def comecar_a_perseguir_alien_mais_perto(self):
-        if self.projetil_direita() == False and self.projetil_esquerda() == False:
+    def sensor_intersect(self):
+        if self.projetil_direita() == True or self.projetil_esquerda() == True:
             return True
+        return False
+
+    def desviar(self):
+        screen_size = screen.get_size()
+        if self.projetil_esquerda() and self.intersect_right_square_ship() == False:
+            if self.status in (0, 1):
+                self.position[0] += 1 * self.speed
+                if self.position[0] < 0:
+                    self.position[0] = 0
+                if self.position[0] > screen_size[0] - self.size[0]:
+                    self.position[0] = screen_size[0] - self.size[0]
+                self.rect = pygame.Rect(self.position, self.size)
+                self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
+                                               self.shield_size)
+        elif self.projetil_direita() and self.intersect_left_square_ship() == False:
+            if self.status in (0, 1):
+                self.position[0] += -1 * self.speed
+                if self.position[0] < 0:
+                    self.position[0] = 0
+                if self.position[0] > screen_size[0] - self.size[0]:
+                    self.position[0] = screen_size[0] - self.size[0]
+                self.rect = pygame.Rect(self.position, self.size)
+                self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
+                                               self.shield_size)
+        elif self.projetil_esquerda() and self.intersect_right_square_ship():
+            pass
+        elif self.projetil_direita() and self.intersect_left_square_ship():
+            pass
+
+    # -------------------------------------------------------------------------------------------------------------------
+    ### DIREÇÃO DO ALIEN ###
+    def aliens_direction_left(self):
+        if len(self.aliens_list) > 0:
+            if self.aliens_list[0].direction == -1:
+                return True
+        return False
+
+    def aliens_direction_right(self):
+        if len(self.aliens_list) > 0:
+            if self.aliens_list[0].direction == 1:
+                return True
         return False
     # -------------------------------------------------------------------------------------------------------------------
     ### OBTER POSIÇÃO DO ALIEN MAIS PERTO ###
@@ -1895,6 +1905,7 @@ class Ship:
             self.aliens_target.clear()
         if len(self.aliens_list) > 0:
             for i in range(len(self.aliens_list)):
+                print(self.aliens_list[i].move_delay)
                 position_result = abs(self.aliens_list[i].position - self.position)
                 if len(self.aliens_target) < len(self.aliens_list):
                     self.aliens_target.append([position_result, self.aliens_list[i]])
@@ -1932,7 +1943,6 @@ class Ship:
     # -------------------------------------------------------------------------------------------------------------------
 
 
-
     def draw(self, screen):
         # alien size
         # if len(self.aliens_list) > 0:
@@ -1951,12 +1961,12 @@ class Ship:
                          (self.capsula_UFO()[4], self.capsula_UFO()[5]))
 
         # Rectangulo a direita da nave
-        # pygame.draw.rect(screen, (255, 0, 0),
-        #                pygame.Rect(self.position[0] + self.size[0], self.position[1], self.size[0], self.size[1]))
+        pygame.draw.rect(screen, (255, 0, 0),
+                         pygame.Rect(self.position[0] + self.size[0], self.position[1], self.size[0], self.size[1]))
 
         # Rectangulo a esquerda da nava
-        # pygame.draw.rect(screen, (255, 0, 0),
-        #                pygame.Rect(self.position[0] - self.size[0], self.position[1], self.size[0], self.size[1]))
+        pygame.draw.rect(screen, (255, 0, 0),
+                         pygame.Rect(self.position[0] - self.size[0], self.position[1], self.size[0], self.size[1]))
 
         screen.blit(self.pic, self.position.astype(np.int16))
         if self.shield:
@@ -1967,8 +1977,6 @@ class Ship:
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-
-
     def intersect_right_line(self):
         line_points = self.line_points(self.position[0] + self.size[0], self.position[1],
                                        self.position[0] + self.size[0], self.position[1] - 800)
@@ -1976,18 +1984,6 @@ class Ship:
             for p in range(len(line_points)):
                 if self.aliens_list[i].rect.collidepoint(line_points[p]):
                     return True
-        return False
-
-    def aliens_direction_left(self):
-        if len(self.aliens_list) > 0:
-            if self.aliens_list[0].direction == -1:
-                return True
-        return False
-
-    def aliens_direction_right(self):
-        if len(self.aliens_list) > 0:
-            if self.aliens_list[0].direction == 1:
-                return True
         return False
 
     def intersect_left_line(self):
