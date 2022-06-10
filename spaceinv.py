@@ -2012,7 +2012,6 @@ class Ship:
         # Diagonal direita UFO
         # pygame.draw.line(screen, (255, 0, 0), (self.capsula_UFO()[0], self.capsula_UFO()[1]),
         #                 (self.capsula_UFO()[4], self.capsula_UFO()[5]))
-
         # Rectangulo a direita da nave
         #pygame.draw.rect(screen, (255, 0, 0),
         #                 pygame.Rect(self.position[0] + self.size[0], self.position[1], self.size[0], self.size[1]))
