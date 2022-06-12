@@ -1898,6 +1898,27 @@ class Ship:
                     return True
         return False
 
+    def double_fire_disable(self):
+        if len(self.powerups) > 0:
+            for i in range(len(self.powerups)):
+                if self.powerups[i][3] == "Double Fire":
+                    return False
+        return True
+
+    def triple_fire_disable(self):
+        if len(self.powerups) > 0:
+            for i in range(len(self.powerups)):
+                if self.powerups[i][3] == "Triple Fire":
+                    return False
+        return True
+
+    def rapid_fire_disable(self):
+        if len(self.powerups) > 0:
+            for i in range(len(self.powerups)):
+                if self.powerups[i][3] == "Rapid Fire":
+                    return False
+        return True
+      
     def double_fire_enable(self):
         if len(self.powerups) > 0:
             for i in range(len(self.powerups)):
@@ -1918,6 +1939,7 @@ class Ship:
                 if self.powerups[i][3] == "Rapid Fire":
                     return True
         return False
+
 
 
 
@@ -1983,7 +2005,10 @@ class Ship:
         #   pass
         # elif self.projetil_direita() and self.intersect_left_square_ship():
         #   pass
-
+    def avoid_UFO(self):
+        if len(self.ufos_target) > 0:
+            return True
+        return False
     # -------------------------------------------------------------------------------------------------------------------
     ### DIREÇÃO DO ALIEN ###
     def aliens_direction_left(self):
