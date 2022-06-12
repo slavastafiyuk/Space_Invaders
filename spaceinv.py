@@ -1880,12 +1880,44 @@ class Ship:
                     return True
         return False
 
-    def shield_freeze_disable(self):
+    def freeze_disable(self):
         if len(self.powerups) > 0:
             for i in range(len(self.powerups)):
                 if self.powerups[i][3] == "Freeze Aliens":
                     return False
         return True
+
+    def freeze_enable(self):
+        if len(self.powerups) > 0:
+            for i in range(len(self.powerups)):
+                if self.powerups[i][3] == "Freeze Aliens":
+                    return True
+        return False
+
+    def double_fire_enable(self):
+        if len(self.powerups) > 0:
+            for i in range(len(self.powerups)):
+                if self.powerups[i][3] == "Double Fire":
+                    return True
+        return False
+
+    def triple_fire_enable(self):
+        if len(self.powerups) > 0:
+            for i in range(len(self.powerups)):
+                if self.powerups[i][3] == "Triple Fire":
+                    return True
+        return False
+
+    def rapid_fire_enable(self):
+        if len(self.powerups) > 0:
+            for i in range(len(self.powerups)):
+                if self.powerups[i][3] == "Rapid Fire":
+                    return True
+        return False
+
+
+
+
 
     ### VERIFICAÇÃO DOS PROJETEIS (LADO) E DESVIAR E VERIFICAR SE É POSSIVEL DESVIAR PARA O LADO E INTERSECÇÃO DAS BULLETS###
     def projetil_esquerda(self):  # Funciona
