@@ -1701,6 +1701,7 @@ class Ship:
         self.left_square_ship = None
         self.center_square_ship = None
         self.lvl = None
+
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -1809,7 +1810,8 @@ class Ship:
     ### MOVER PARA DIREITA ###
     def move_sides_direita(self):
         screen_size = screen.get_size()
-        if self.status in (0, 1) and self.intersect_left_square_ship() == False and self.intersect_left_square_ship() == False:
+        if self.status in (
+        0, 1) and self.intersect_left_square_ship() == False and self.intersect_left_square_ship() == False:
             self.position[0] += 1 * self.speed
             if self.position[0] < 0:
                 self.position[0] = 0
@@ -1822,7 +1824,8 @@ class Ship:
     ### MOVER PARA ESQUERDA ###
     def move_sides_esquerda(self):
         screen_size = screen.get_size()
-        if self.status in (0, 1) and self.intersect_left_square_ship() == False and self.intersect_left_square_ship() == False:
+        if self.status in (
+        0, 1) and self.intersect_left_square_ship() == False and self.intersect_left_square_ship() == False:
             self.position[0] += -1 * self.speed
             if self.position[0] < 0:
                 self.position[0] = 0
@@ -1837,8 +1840,9 @@ class Ship:
                                              self.size[1])
         self.left_square_ship = pygame.Rect(self.position[0] - self.size[0], self.position[1], self.size[0],
                                             self.size[1])
-        self.center_square_ship = pygame.Rect(self.position[0], self.position[1] - self.size[1], self.size[0], self.size[1])
-        #print(self.poder_atacar())
+        self.center_square_ship = pygame.Rect(self.position[0], self.position[1] - self.size[1], self.size[0],
+                                              self.size[1])
+        # print(self.poder_atacar())
         self.mybehaviour.run()
 
     def defineBehaviourTree(self):
@@ -1969,7 +1973,7 @@ class Ship:
             self.aliens_target.clear()
         if len(self.aliens_list) > 0:
             for i in range(len(self.aliens_list)):
-                #print(self.aliens_list[i].move_delay)
+                # print(self.aliens_list[i].move_delay)
                 position_result = abs(self.aliens_list[i].position - self.position)
                 if len(self.aliens_target) < len(self.aliens_list):
                     self.aliens_target.append([position_result, self.aliens_list[i]])
@@ -1981,10 +1985,12 @@ class Ship:
     # -------------------------------------------------------------------------------------------------------------------
     ### ATACAR OS ALIENS QUANDO ELES MOVEM-SE PARA A DIREITA ###
     def atacar_proximo_mov_direita(self):
-        pos = ((500 * 10)/self.aliens_list[0].move_delay)
-        if self.position[0] - pos < self.obter_alien_mais_proximo().position[0] + self.obter_alien_mais_proximo().size[0] - 5:
+        pos = ((500 * 10) / self.aliens_list[0].move_delay)
+        if self.position[0] - pos < self.obter_alien_mais_proximo().position[0] + self.obter_alien_mais_proximo().size[
+            0] - 5:
             self.move_sides_direita()
-        elif self.position[0] - pos > self.obter_alien_mais_proximo().position[0] + self.obter_alien_mais_proximo().size[0] + 5:
+        elif self.position[0] - pos > self.obter_alien_mais_proximo().position[0] + \
+                self.obter_alien_mais_proximo().size[0] + 5:
             self.move_sides_esquerda()
         else:
             self.disparar()
@@ -1992,7 +1998,7 @@ class Ship:
     # -------------------------------------------------------------------------------------------------------------------
     ### ATACAR OS ALIENS QUANDO ELES MOVEM-SE PARA A ESQUERDA ###
     def atacar_proximo_mov_esquerda(self):
-        pos = ((500 * 10)/self.aliens_list[0].move_delay)
+        pos = ((500 * 10) / self.aliens_list[0].move_delay)
         if self.position[0] + self.size[0] + pos < self.obter_alien_mais_proximo().position[0] - 5:
             self.move_sides_direita()
         elif self.position[0] + self.size[0] + pos > self.obter_alien_mais_proximo().position[0] + 5:
@@ -2008,9 +2014,18 @@ class Ship:
     # -------------------------------------------------------------------------------------------------------------------
     ### UFO ###
     def ufo_exist(self):
-        pass
+        if len(self.ufos_target) > 0:
+            return True
+        return False
 
-
+    def ufo_bullets_exist(self):
+        if self.ufo_bullet_pic is not None:
+            for i in range(len(self.alien_bullets_list)):
+                if self.alien_bullets_list[i][0] == self.ufo_bullet_pic:
+                    print("OLAAAA")
+                    return True
+            return False
+        return False
 
 
 
@@ -2031,13 +2046,13 @@ class Ship:
         # pygame.draw.line(screen, (255, 0, 0), (self.capsula_UFO()[0], self.capsula_UFO()[1]),
         #                 (self.capsula_UFO()[4], self.capsula_UFO()[5]))
         # Rectangulo a direita da nave
-        #pygame.draw.rect(screen, (255, 0, 0),
+        # pygame.draw.rect(screen, (255, 0, 0),
         #                 pygame.Rect(self.position[0] + self.size[0], self.position[1], self.size[0], self.size[1]))
         # Rectangulo a esquerda da nava
-        #pygame.draw.rect(screen, (255, 0, 0),
+        # pygame.draw.rect(screen, (255, 0, 0),
         #                 pygame.Rect(self.position[0] - self.size[0], self.position[1], self.size[0], self.size[1]))
         # Retangulo central
-        #pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(self.position[0], self.position[1] - self.size[1], self.size[0], self.size[1]))
+        # pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(self.position[0], self.position[1] - self.size[1], self.size[0], self.size[1]))
         screen.blit(self.pic, self.position.astype(np.int16))
         if self.shield:
             screen.blit(self.shield_pic, self.shield_rect)
