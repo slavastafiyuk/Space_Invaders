@@ -1873,7 +1873,14 @@ class Ship:
                     return False
         return True
 
-    def shield_freeze(self):
+    def shield_enable(self):
+        if len(self.powerups) > 0:
+            for i in range(len(self.powerups)):
+                if self.powerups[i][3] == "Shield":
+                    return True
+        return False
+
+    def shield_freeze_disable(self):
         if len(self.powerups) > 0:
             for i in range(len(self.powerups)):
                 if self.powerups[i][3] == "Freeze Aliens":
@@ -1999,6 +2006,13 @@ class Ship:
         return self.shoot(pygame.time.get_ticks())
 
     # -------------------------------------------------------------------------------------------------------------------
+    ### UFO ###
+    def ufo_exist(self):
+        pass
+
+
+
+
 
     def draw(self, screen):
         # alien size
