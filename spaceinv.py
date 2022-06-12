@@ -1695,6 +1695,7 @@ class Ship:
         self.aliens_list = []  # Lista com os inimigos
         self.alien_escolhido = 0
         self.aliens_target = []
+        self.ufo_positions_list = []
         self.ufos_target = []
         self.ufo_bullet_pic = None
         self.right_square_ship = None
@@ -1756,11 +1757,11 @@ class Ship:
         ponto_central_x = self.space_ship_center_x()
         ponto_central_y = self.space_ship_center_y() - 55
         # Pontos para diagonal esquerda
-        diagonal_esquerda_x = self.position[0] - 10
-        diagonal_esquerda_y = self.space_ship_center_y() - 5
+        diagonal_esquerda_x = self.position[0] - 15
+        diagonal_esquerda_y = self.space_ship_center_y() + 5
         # Pontos para diagonal direita
-        diagonal_direita_x = self.position[0] + self.size[0] + 10
-        diagonal_direita_y = self.space_ship_center_y() - 5
+        diagonal_direita_x = self.position[0] + self.size[0] + 15
+        diagonal_direita_y = self.space_ship_center_y() + 5
         return ponto_central_x, ponto_central_y, diagonal_esquerda_x, diagonal_esquerda_y, diagonal_direita_x, diagonal_direita_y
 
     def capsula_UFO(self):
@@ -1811,7 +1812,7 @@ class Ship:
     def move_sides_direita(self):
         screen_size = screen.get_size()
         if self.status in (
-        0, 1) and self.intersect_left_square_ship() == False and self.intersect_left_square_ship() == False:
+                0, 1) and self.intersect_left_square_ship() == False and self.intersect_left_square_ship() == False:
             self.position[0] += 1 * self.speed
             if self.position[0] < 0:
                 self.position[0] = 0
@@ -1825,7 +1826,7 @@ class Ship:
     def move_sides_esquerda(self):
         screen_size = screen.get_size()
         if self.status in (
-        0, 1) and self.intersect_left_square_ship() == False and self.intersect_left_square_ship() == False:
+                0, 1) and self.intersect_left_square_ship() == False and self.intersect_left_square_ship() == False:
             self.position[0] += -1 * self.speed
             if self.position[0] < 0:
                 self.position[0] = 0
@@ -1843,6 +1844,7 @@ class Ship:
         self.center_square_ship = pygame.Rect(self.position[0], self.position[1] - self.size[1], self.size[0],
                                               self.size[1])
         # print(self.poder_atacar())
+        self.ufo_bullets_exist()
         self.mybehaviour.run()
 
     def defineBehaviourTree(self):
@@ -1850,11 +1852,15 @@ class Ship:
                                           Atomic(self.sensor_intersect),
                                           Atomic(self.desviar)),
                                  Sequence(Atomic(self.poder_atacar_dis),
+                                          Atomic(self.ufo_exist_complement),
                                           Atomic(self.aliens_direction_right),
                                           Atomic(self.atacar_proximo_mov_direita)),
                                  Sequence(Atomic(self.poder_atacar_dis),
+                                          Atomic(self.ufo_exist_complement),
                                           Atomic(self.aliens_direction_left),
-                                          Atomic(self.atacar_proximo_mov_esquerda))
+                                          Atomic(self.atacar_proximo_mov_esquerda)),
+                                 Sequence(Atomic(self.ufo_exist),
+                                          Atomic(self.atacar_ufo_mais_proximo))
                                  )
                         )
 
@@ -1918,7 +1924,7 @@ class Ship:
                 if self.powerups[i][3] == "Rapid Fire":
                     return False
         return True
-      
+
     def double_fire_enable(self):
         if len(self.powerups) > 0:
             for i in range(len(self.powerups)):
@@ -1939,11 +1945,6 @@ class Ship:
                 if self.powerups[i][3] == "Rapid Fire":
                     return True
         return False
-
-
-
-
-
 
     ### VERIFICAÇÃO DOS PROJETEIS (LADO) E DESVIAR E VERIFICAR SE É POSSIVEL DESVIAR PARA O LADO E INTERSECÇÃO DAS BULLETS###
     def projetil_esquerda(self):  # Funciona
@@ -2005,10 +2006,8 @@ class Ship:
         #   pass
         # elif self.projetil_direita() and self.intersect_left_square_ship():
         #   pass
-    def avoid_UFO(self):
-        if len(self.ufos_target) > 0:
-            return True
-        return False
+
+
     # -------------------------------------------------------------------------------------------------------------------
     ### DIREÇÃO DO ALIEN ###
     def aliens_direction_left(self):
@@ -2030,14 +2029,46 @@ class Ship:
             self.aliens_target.clear()
         if len(self.aliens_list) > 0:
             for i in range(len(self.aliens_list)):
-                # print(self.aliens_list[i].move_delay)
                 position_result = abs(self.aliens_list[i].position - self.position)
                 if len(self.aliens_target) < len(self.aliens_list):
                     self.aliens_target.append([position_result, self.aliens_list[i]])
                 elif len(self.aliens_target) == len(self.aliens_list):
-                    # print(self.aliens_target)
                     self.aliens_target.sort(key=lambda row: (row[0][0], row[0][0]))
             return self.aliens_target[0][1]
+
+    ### UFO ###
+    def ufo_exist(self):  # Funciona
+        if len(self.ufos_target) > 0:
+            return True
+        elif len(self.ufos_target) == 0 and len(self.ufo_positions_list) > 0:
+            self.ufo_positions_list.clear()
+            return False
+        else:
+            return False
+
+    def ufo_exist_complement(self):
+        if len(self.ufos_target) > 0:
+            return False
+        return True
+    def ufo_bullets_exist(self):  # Funciona
+        if self.ufo_bullet_pic is not None:
+            for i in range(len(self.alien_bullets_list)):
+                if self.alien_bullets_list[i].pic == self.ufo_bullet_pic:
+                    return True
+            return False
+        return False
+
+    ### OBTER POSIÇÃO DO UFO MAIS PERTO ###
+    def get_positions_ufo(self):  # self.ufos_target[0].position
+        if self.ufo_exist():
+            for i in range(len(self.ufos_target)):
+                position_result = abs(self.ufos_target[i].position - self.position)
+                if len(self.ufo_positions_list) < len(self.ufos_target):
+                    self.ufo_positions_list.append([position_result, self.ufos_target[i]])
+                elif len(self.ufos_target) == len(self.ufo_positions_list):
+                    self.aliens_target.sort(key=lambda row: (row[0][0], row[0][0]))
+            return self.ufo_positions_list[0][1]
+
 
     # -------------------------------------------------------------------------------------------------------------------
     ### ATACAR OS ALIENS QUANDO ELES MOVEM-SE PARA A DIREITA ###
@@ -2063,26 +2094,27 @@ class Ship:
         else:
             self.disparar()
 
+    def atacar_ufo_mais_proximo(self):
+        if self.get_positions_ufo().from_side == 1: #left
+            if self.position[0] + self.size[0] < self.get_positions_ufo().position[0] - 5:
+                self.move_sides_direita()
+            elif self.position[0] + self.size[0] > self.get_positions_ufo().position[0] + 5:
+                self.move_sides_esquerda()
+            else:
+                self.disparar()
+        elif self.get_positions_ufo().from_side == -1: #right
+            if self.position[0] + self.size[0] < self.get_positions_ufo().position[0] - 5:
+                self.move_sides_direita()
+            elif self.position[0] + self.size[0] > self.get_positions_ufo().position[0] + 5:
+                self.move_sides_esquerda()
+            else:
+                self.disparar()
     # -------------------------------------------------------------------------------------------------------------------
     ### DISPARAR ###
     def disparar(self):
         return self.shoot(pygame.time.get_ticks())
 
     # -------------------------------------------------------------------------------------------------------------------
-    ### UFO ###
-    def ufo_exist(self):
-        if len(self.ufos_target) > 0:
-            return True
-        return False
-
-    def ufo_bullets_exist(self):
-        if self.ufo_bullet_pic is not None:
-            for i in range(len(self.alien_bullets_list)):
-                if self.alien_bullets_list[i][0] == self.ufo_bullet_pic:
-                    print("OLAAAA")
-                    return True
-            return False
-        return False
 
 
 
