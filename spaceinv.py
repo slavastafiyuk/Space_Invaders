@@ -1873,6 +1873,13 @@ class Ship:
                     return False
         return True
 
+    def shield_freeze(self):
+        if len(self.powerups) > 0:
+            for i in range(len(self.powerups)):
+                if self.powerups[i][3] == "Freeze Aliens":
+                    return False
+        return True
+
     ### VERIFICAÇÃO DOS PROJETEIS (LADO) E DESVIAR E VERIFICAR SE É POSSIVEL DESVIAR PARA O LADO E INTERSECÇÃO DAS BULLETS###
     def projetil_esquerda(self):  # Funciona
         line_points = self.line_points(self.capsula()[0], self.capsula()[1], self.capsula()[2], self.capsula()[3])
@@ -1890,13 +1897,10 @@ class Ship:
                     return True
         return False
 
-
-
     def sensor_intersect(self):
         if self.projetil_direita() == True or self.projetil_esquerda() == True:
             return True
         return False
-
 
     def poder_atacar(self):
         for i in range(len(self.alien_bullets_list)):
@@ -1971,9 +1975,9 @@ class Ship:
     ### ATACAR OS ALIENS QUANDO ELES MOVEM-SE PARA A DIREITA ###
     def atacar_proximo_mov_direita(self):
         pos = ((500 * 10)/self.aliens_list[0].move_delay)
-        if self.position[0] < self.obter_alien_mais_proximo().position[0] + self.obter_alien_mais_proximo().size[0] - 5:
+        if self.position[0] - pos < self.obter_alien_mais_proximo().position[0] + self.obter_alien_mais_proximo().size[0] - 5:
             self.move_sides_direita()
-        elif self.position[0] > self.obter_alien_mais_proximo().position[0] + self.obter_alien_mais_proximo().size[0] + 5:
+        elif self.position[0] - pos > self.obter_alien_mais_proximo().position[0] + self.obter_alien_mais_proximo().size[0] + 5:
             self.move_sides_esquerda()
         else:
             self.disparar()
@@ -1982,9 +1986,9 @@ class Ship:
     ### ATACAR OS ALIENS QUANDO ELES MOVEM-SE PARA A ESQUERDA ###
     def atacar_proximo_mov_esquerda(self):
         pos = ((500 * 10)/self.aliens_list[0].move_delay)
-        if self.position[0] + self.size[0] < self.obter_alien_mais_proximo().position[0] - 5:
+        if self.position[0] + self.size[0] + pos < self.obter_alien_mais_proximo().position[0] - 5:
             self.move_sides_direita()
-        elif self.position[0] + self.size[0] > self.obter_alien_mais_proximo().position[0] + 5:
+        elif self.position[0] + self.size[0] + pos > self.obter_alien_mais_proximo().position[0] + 5:
             self.move_sides_esquerda()
         else:
             self.disparar()
