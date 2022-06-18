@@ -1912,7 +1912,7 @@ class Ship:
 
     # -------------------------------------------------------------------------------------------------------------------
     ### UFO ###
-    def ufo_exist(self):
+    def ufo_exist(self): #may_be_shot
         if len(self.ufos_target) > 0 and self.poder_atacar_dis():
             return True
         elif len(self.ufos_target) == 0 and len(self.ufo_positions_list) > 0:
@@ -1920,11 +1920,6 @@ class Ship:
             return False
         else:
             return False
-
-    def ufo_exist_complement(self):
-        if len(self.ufos_target) > 0:
-            return False
-        return True
 
     def ufo_bullets_exist(self):
         if self.ufo_bullet_pic is not None:
@@ -1949,45 +1944,19 @@ class Ship:
 
     def atacar_ufo_mais_proximo(self):
         if self.get_ufo().from_side == 1: #left
-            if self.position[0] + self.size[0]< self.get_ufo().position[0] - 5:
+            if self.position[0] + self.size[0]/2 < self.get_ufo().position[0] + self.get_ufo().size[0]/2 - 5:
                 self.move_sides_direita()
-            elif self.position[0] + self.size[0] > self.get_ufo().position[0] + 5:
+            elif self.position[0] + self.size[0]/2 > self.get_ufo().position[0] + self.get_ufo().size[0]/2 + 5:
                 self.move_sides_esquerda()
             else:
                 self.disparar()
         elif self.get_ufo().from_side == -1: #right
-            if self.position[0] + self.size[0] < self.get_ufo().position[0] - 5:
+            if self.position[0] + self.size[0]/2 < self.get_ufo().position[0] + self.get_ufo().size[0]/2 - 5:
                 self.move_sides_direita()
-            elif self.position[0] + self.size[0] > self.get_ufo().position[0] + 5:
+            elif self.position[0] + self.size[0]/2 > self.get_ufo().position[0] + self.get_ufo().size[0]/2 + 5:
                 self.move_sides_esquerda()
             else:
                 self.disparar()
-    # -------------------------------------------------------------------------------------------------------------------
-    ### POWERUPS ###
-    def powerups_exist(self):
-        if len(self.powerups_in_game) > 0 and  self.poder_atacar_dis():
-            return True
-        return False
-
-    def get_powerup_position(self):
-        if len(self.powerups_in_game) < len(self.powerups_position_list):
-            self.powerups_position_list.clear()
-        for i in range(len(self.powerups_in_game)):
-            position_result = abs(self.powerups_in_game[i].position - self.position)
-            if len(self.powerups_position_list) < len(self.powerups_in_game):
-                self.powerups_position_list.append([position_result, self.powerups_in_game[i]])
-            elif len(self.powerups_in_game) == len(self.powerups_position_list):
-                self.powerups_position_list.sort(key=lambda row: (row[0][0], row[0][0]))
-        return self.powerups_position_list[0][1]
-
-    def get_powerup(self):
-        print("Mine position:" + str(self.position[0]) + "PowerUp:" + str(self.get_powerup_position().position[0]))
-        if self.position[0] + self.size[0]/2 < self.get_powerup_position().position[0] + self.size[0]/2 - 3:
-            self.move_sides_direita()
-        elif self.position[0] + self.size[0]/2 > self.get_powerup_position().position[0] + self.size[0]/2 + 3:
-            self.move_sides_esquerda()
-        else:
-            self.disparar()
 
     # -------------------------------------------------------------------------------------------------------------------
     ### ALIENS ###
@@ -2035,6 +2004,33 @@ class Ship:
         else:
             return 0
 
+    # -------------------------------------------------------------------------------------------------------------------
+    ### POWERUPS ###
+
+    def powerups_exist(self):
+        if len(self.powerups_in_game) > 0 and self.poder_atacar_dis():
+            return True
+        return False
+
+    def get_powerup_position(self):
+        if len(self.powerups_in_game) < len(self.powerups_position_list):
+            self.powerups_position_list.clear()
+        for i in range(len(self.powerups_in_game)):
+            position_result = abs(self.powerups_in_game[i].position - self.position)
+            if len(self.powerups_position_list) < len(self.powerups_in_game):
+                self.powerups_position_list.append([position_result, self.powerups_in_game[i]])
+            elif len(self.powerups_in_game) == len(self.powerups_position_list):
+                self.powerups_position_list.sort(key=lambda row: (row[0][0], row[0][0]))
+        return self.powerups_position_list[0][1]
+
+    def get_powerup(self):
+        print("Mine position:" + str(self.position[0]) + "PowerUp:" + str(self.get_powerup_position().position[0]))
+        if self.position[0] + self.size[0] / 2 < self.get_powerup_position().position[0] + self.size[0] / 2 - 3:
+            self.move_sides_direita()
+        elif self.position[0] + self.size[0] / 2 > self.get_powerup_position().position[0] + self.size[0] / 2 + 3:
+            self.move_sides_esquerda()
+        else:
+            self.disparar()
 
     def have_powerups(self):
         if self.alien_freeze == True: #or self.double_fire_enable() or self.triple_fire_enable() or self.rapid_fire_enable()
@@ -2158,12 +2154,14 @@ class Ship:
         if self.shield:
             return True
         else:
-            for i in range(len(self.alien_bullets_list)):
-                if self.alien_bullets_list[i].rect.colliderect(self.center_square_ship):
-                    self.disparar()
-                    return False
-            return True
-
+            if len(self.alien_bullets_list) > 0:
+                for i in range(len(self.alien_bullets_list)):
+                    if self.alien_bullets_list[i].rect.colliderect(self.center_square_ship):
+                        self.disparar()
+                        return False
+                return True
+            else:
+                return True
     # -------------------------------------------------------------------------------------------------------------------
 
 
