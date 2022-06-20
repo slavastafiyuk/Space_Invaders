@@ -2117,8 +2117,7 @@ class Ship:
     def ufo_exist(self):  # may_be_shot
         if len(self.ufos_target) > 0 and self.poder_atacar_dis():
             if self.get_ufo() is not None:
-                if \
-                self.get_ufo()[1].may_be_shot and self.get_ufo()[0][0] <= 150 and 123 <= self.get_ufo()[1].position[0] <= 837:
+                if self.get_ufo()[1].may_be_shot and self.get_ufo()[0][0] <= 150 and 123 <= self.get_ufo()[1].position[0] <= 837:
                     return True
                 else:
                     return False
