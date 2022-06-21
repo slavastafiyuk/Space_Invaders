@@ -411,6 +411,8 @@ class SpaceInvaders:
                 self.ship.powerups_in_game = self.powerups
                 self.ship.aliens_list = self.aliens
                 self.ship.ufos_target = self.ufos
+                self.channel = self.ship.channel_ship
+                self.ship.channel_nr_ship = self.nr_channels
                 self.ship.alien_freeze = self.freeze_aliens
                 if self.ship.ufo_bullet_pic is None and len(self.ufos) > 0:
                     self.ship.ufo_bullet_pic = self.ufos[0].bullet_pic
@@ -1729,7 +1731,10 @@ class Ship:
         self.right = False
         self.boss_bulets = []
         self.bullet_boss_pos = None
-
+        self.count_plus = 0
+        self.count_nega = 0
+        self.channel_ship = 1
+        self.channel_nr_ship = None
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -1782,13 +1787,13 @@ class Ship:
     def capsula(self):
         # Ponto central
         ponto_central_x = self.space_ship_center_x()
-        ponto_central_y = self.space_ship_center_y() - 65
+        ponto_central_y = self.space_ship_center_y() - 50
         # Pontos para diagonal esquerda
-        diagonal_esquerda_x = self.position[0] - 5  # 15
-        diagonal_esquerda_y = self.space_ship_center_y() + 15
+        diagonal_esquerda_x = self.position[0] - 9  # 15
+        diagonal_esquerda_y = self.space_ship_center_y() + 5
         # Pontos para diagonal direita
-        diagonal_direita_x = self.position[0] + self.size[0] + 5  # 15
-        diagonal_direita_y = self.space_ship_center_y() + 15
+        diagonal_direita_x = self.position[0] + self.size[0] + 9  # 15
+        diagonal_direita_y = self.space_ship_center_y() + 5
         return ponto_central_x, ponto_central_y, diagonal_esquerda_x, diagonal_esquerda_y, diagonal_direita_x, diagonal_direita_y
 
     def capsula_UFO(self):
@@ -1836,15 +1841,15 @@ class Ship:
                                              self.size[1])
         self.left_square_ship = pygame.Rect(self.position[0] - self.size[0], self.position[1], self.size[0],
                                             self.size[1])
+        self.center_square_ship = pygame.Rect(self.position[0] - 27, self.position[1] - self.size[1] - 30,
+                                              self.size[0] + 50, self.size[1] + 70)
         # self.center_square_ship = pygame.Rect(self.position[0] - 27, self.position[1] - self.size[1], self.size[0] + 50, self.size[1] + 40)
         # self.center_square_ship = pygame.Rect(self.position[0] - 27, self.position[1] - self.size[1] - 10,
         #                                      self.size[0] + 50, self.size[1] + 50)
-        self.center_square_ship = pygame.Rect(self.position[0] - 27, self.position[1] - self.size[1] - 30,
-                                              self.size[0] + 50, self.size[1] + 70)
         self.mybehaviour.run()
 
     def defineBehaviourTree(self):
-        return Sequence(Selector(Sequence(Atomic(self.sensor_intersect),
+        return Sequence(Selector(Sequence(Atomic(self.complement_poder_atacar_dis),
                                           Atomic(self.desviar)),
                                  Sequence(Atomic(self.poder_atacar_dis_com_ufo_and_power),
                                           Atomic(self.atacar_alien_mais_prox)),
@@ -1933,176 +1938,61 @@ class Ship:
 
     def desviar(self):
         screen_size = screen.get_size()
-        if self.projetil_esquerda() and not self.projetil_direita():  # and self.intersect_right_square_ship() == False
-            if self.status in (0, 1):
-                self.position[0] += 1 * self.speed
-                if self.position[0] < 0:
-                    self.position[0] = 0
-                if self.position[0] > screen_size[0] - self.size[0]:
-                    self.position[0] = screen_size[0] - self.size[0]
-                self.rect = pygame.Rect(self.position, self.size)
-                self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
-                                               self.shield_size)
-        elif self.projetil_direita() and not self.projetil_esquerda():  # and self.intersect_left_square_ship() == False
-            if self.status in (0, 1):
-                self.position[0] += -1 * self.speed
-                if self.position[0] < 0:
-                    self.position[0] = 0
-                if self.position[0] > screen_size[0] - self.size[0]:
-                    self.position[0] = screen_size[0] - self.size[0]
-                self.rect = pygame.Rect(self.position, self.size)
-                self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
-                                               self.shield_size)
-        elif self.projetil_esquerda() and self.projetil_direita():
-            if self.status in (0, 1):
-                self.position[0] += 1 * self.speed
-                if self.position[0] < 0:
-                    self.position[0] = 0
-                if self.position[0] > screen_size[0] - self.size[0]:
-                    self.position[0] = screen_size[0] - self.size[0]
-                self.rect = pygame.Rect(self.position, self.size)
-                self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
-                                               self.shield_size)
-            #if self.intersect_right_square_ship() and self.intersect_left_square_ship():
-            #    print("OI")
-            #    if self.status in (0, 1):
-            #        self.position[0] += 1 * self.speed
-            #        if self.position[0] < 0:
-            #            self.position[0] = 0
-            #        if self.position[0] > screen_size[0] - self.size[0]:
-            #            self.position[0] = screen_size[0] - self.size[0]
-            #        self.rect = pygame.Rect(self.position, self.size)
-            #        self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
-            #                                       self.shield_size)
-            #elif self.intersect_right_square_ship() and not self.intersect_left_square_ship():
-            #    if self.status in (0, 1):
-            #        self.position[0] += -1 * self.speed
-            #        if self.position[0] < 0:
-            #            self.position[0] = 0
-            #        if self.position[0] > screen_size[0] - self.size[0]:
-            #            self.position[0] = screen_size[0] - self.size[0]
-            #        self.rect = pygame.Rect(self.position, self.size)
-            #        self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
-            #                                       self.shield_size)
-            #elif self.intersect_left_square_ship() and not self.intersect_right_square_ship():
-            #    if self.status in (0, 1):
-            #        self.position[0] += 1 * self.speed
-            #        if self.position[0] < 0:
-            #            self.position[0] = 0
-            #        if self.position[0] > screen_size[0] - self.size[0]:
-            #            self.position[0] = screen_size[0] - self.size[0]
-            #        self.rect = pygame.Rect(self.position, self.size)
-            #        self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
-            #                                       self.shield_size)
-        #if self.obter_alien_mais_proximo() is not None:
-        #    if self.obter_alien_mais_proximo().hit_area is None:
-        #        if self.projetil_esquerda():  # and self.intersect_right_square_ship() == False
-        #            if self.status in (0, 1):
-        #                self.position[0] += 1 * self.speed
-        #                if self.position[0] < 0:
-        #                    self.position[0] = 0
-        #                if self.position[0] > screen_size[0] - self.size[0]:
-        #                    self.position[0] = screen_size[0] - self.size[0]
-        #                self.rect = pygame.Rect(self.position, self.size)
-        #                self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
-        #                                               self.shield_size)
-        #        elif self.projetil_direita():  # and self.intersect_left_square_ship() == False
-        #            if self.status in (0, 1):
-        #                self.position[0] += -1 * self.speed
-        #                if self.position[0] < 0:
-        #                    self.position[0] = 0
-        #                if self.position[0] > screen_size[0] - self.size[0]:
-        #                    self.position[0] = screen_size[0] - self.size[0]
-        #                self.rect = pygame.Rect(self.position, self.size)
-        #                self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
-        #                                               self.shield_size)
-        #    elif self.obter_alien_mais_proximo().hit_area is not None:
-        #        if not self.poder_atacar_dis() and self.lvl == 4:
-        #            # print(self.get_bullets_boss_positions())
-        #            #if self.bullet_boss_pos is None:
-        #            #    self.bullet_boss_pos = self.get_bullets_boss_positions()
-        #            #self.bullet_boss_pos = self.get_bullets_boss_positions()
-        #            #if self.bullet_boss_pos < 0:
-        #            #    self.move_sides_esquerda()
-        #            #elif self.bullet_boss_pos >= 0:
-        #            #    self.move_sides_direita()
-        #            #else:
-        #            if self.projetil_esquerda() and self.projetil_direita():
-        #                if self.status in (0, 1):
-        #                    self.position[0] += 1 * self.speed
-        #                    if self.position[0] < 0:
-        #                        self.position[0] = 0
-        #                    if self.position[0] > screen_size[0] - self.size[0]:
-        #                        self.position[0] = screen_size[0] - self.size[0]
-        #                    self.rect = pygame.Rect(self.position, self.size)
-        #                    self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
-        #                                                   self.shield_size)
-        #            elif self.projetil_esquerda():  # and self.intersect_right_square_ship() == False
-        #                if self.status in (0, 1):
-        #                    self.position[0] += 1 * self.speed
-        #                    if self.position[0] < 0:
-        #                        self.position[0] = 0
-        #                    if self.position[0] > screen_size[0] - self.size[0]:
-        #                        self.position[0] = screen_size[0] - self.size[0]
-        #                    self.rect = pygame.Rect(self.position, self.size)
-        #                    self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
-        #                                                   self.shield_size)
-        #            elif self.projetil_direita():  # and self.intersect_left_square_ship() == False
-        #                if self.status in (0, 1):
-        #                    self.position[0] += -1 * self.speed
-        #                    if self.position[0] < 0:
-        #                        self.position[0] = 0
-        #                    if self.position[0] > screen_size[0] - self.size[0]:
-        #                        self.position[0] = screen_size[0] - self.size[0]
-        #                    self.rect = pygame.Rect(self.position, self.size)
-        #                    self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
-        #                                                   self.shield_size)
-        #        elif not self.poder_atacar_dis() and self.lvl == 8:
-        #            if self.projetil_esquerda():  # and self.intersect_right_square_ship() == False
-        #                if self.status in (0, 1):
-        #                    self.position[0] += 1 * self.speed
-        #                    if self.position[0] < 0:
-        #                        self.position[0] = 0
-        #                    if self.position[0] > screen_size[0] - self.size[0]:
-        #                        self.position[0] = screen_size[0] - self.size[0]
-        #                    self.rect = pygame.Rect(self.position, self.size)
-        #                    self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
-        #                                                   self.shield_size)
-        #            elif self.projetil_direita():  # and self.intersect_left_square_ship() == False
-        #                if self.status in (0, 1):
-        #                    self.position[0] += -1 * self.speed
-        #                    if self.position[0] < 0:
-        #                        self.position[0] = 0
-        #                    if self.position[0] > screen_size[0] - self.size[0]:
-        #                        self.position[0] = screen_size[0] - self.size[0]
-        #                    self.rect = pygame.Rect(self.position, self.size)
-        #                    self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
-        #                                                   self.shield_size)
-        #else:
-        #    if self.projetil_esquerda():  # and self.intersect_right_square_ship() == False
-        #        if self.status in (0, 1):
-        #            self.position[0] += 1 * self.speed
-        #            if self.position[0] < 0:
-        #                self.position[0] = 0
-        #            if self.position[0] > screen_size[0] - self.size[0]:
-        #                self.position[0] = screen_size[0] - self.size[0]
-        #            self.rect = pygame.Rect(self.position, self.size)
-        #            self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
-        #                                           self.shield_size)
-        #    elif self.projetil_direita():  # and self.intersect_left_square_ship() == False
-        #        if self.status in (0, 1):
-        #            self.position[0] += -1 * self.speed
-        #            if self.position[0] < 0:
-        #                self.position[0] = 0
-        #            if self.position[0] > screen_size[0] - self.size[0]:
-        #                self.position[0] = screen_size[0] - self.size[0]
-        #            self.rect = pygame.Rect(self.position, self.size)
-        #            self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
-        #                                           self.shield_size)
+        if self.ufo_bullet_intersect():
+            for pos in self.get_ufo_bullets_positions():
+                if pos >= 0:
+                    self.count_plus =+ 1
+                elif pos < 0:
+                    self.count_nega =+ 1
+            print("POSITIVE: " + str(self.count_plus) + " NEGATIVE: " + str(self.count_nega))
+            if self.count_plus == self.count_nega:
+                if abs(self.count_nega) > self.count_plus:
+                    self.move_sides_esquerda()
+                elif abs(self.count_nega) < self.count_plus:
+                    self.move_sides_direita()
+            elif self.count_plus > self.count_nega:
+                self.move_sides_direita()
+            elif self.count_plus < self.count_nega:
+                self.move_sides_esquerda()
+        if self.lvl == 4:
+            if self.get_bullets_boss_positions() > 0:
+                self.move_sides_direita()
+            elif self.get_bullets_boss_positions() < 0:
+                self.move_sides_esquerda()
+        else:
+            if self.projetil_esquerda() and not self.projetil_direita():  # and self.intersect_right_square_ship() == False
+                if self.status in (0, 1):
+                    self.position[0] += 1 * self.speed
+                    if self.position[0] < 0:
+                        self.position[0] = 0
+                    if self.position[0] > screen_size[0] - self.size[0]:
+                        self.position[0] = screen_size[0] - self.size[0]
+                    self.rect = pygame.Rect(self.position, self.size)
+                    self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
+                                                   self.shield_size)
+            elif self.projetil_direita() and not self.projetil_esquerda():  # and self.intersect_left_square_ship() == False
+                if self.status in (0, 1):
+                    self.position[0] += -1 * self.speed
+                    if self.position[0] < 0:
+                        self.position[0] = 0
+                    if self.position[0] > screen_size[0] - self.size[0]:
+                        self.position[0] = screen_size[0] - self.size[0]
+                    self.rect = pygame.Rect(self.position, self.size)
+                    self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
+                                                   self.shield_size)
+            elif self.projetil_esquerda() and self.projetil_direita():
+                if self.status in (0, 1):
+                    self.position[0] += 1 * self.speed
+                    if self.position[0] < 0:
+                        self.position[0] = 0
+                    if self.position[0] > screen_size[0] - self.size[0]:
+                        self.position[0] = screen_size[0] - self.size[0]
+                    self.rect = pygame.Rect(self.position, self.size)
+                    self.shield_rect = pygame.Rect(self.position - (self.shield_size - self.size) // 2,
+                                                   self.shield_size)
+
 
     def get_bullets_boss_positions(self):
-        if len(self.boss_bulets) > 0:
-            self.boss_bulets.pop(0)
         for i in range(len(self.alien_bullets_list)):
             if self.alien_bullets_list[i].rect.colliderect(self.center_square_ship):
                 position = (self.position[0] + self.size[0] / 2) - self.alien_bullets_list[i].position[0]
@@ -2112,12 +2002,36 @@ class Ship:
                     self.boss_bulets.sort()
         return self.boss_bulets[0]
 
+    def ufo_bullet_intersect(self):
+        for i in range(len(self.alien_bullets_list)):
+            if self.alien_bullets_list[i].pic == self.ufo_bullet_pic and self.alien_bullets_list[i].rect.colliderect(self.center_square_ship):
+                return True
+        return False
+
+    def get_ufo_bullets_positions(self):
+        for i in range(len(self.alien_bullets_list)):
+            if self.alien_bullets_list[i].rect.colliderect(self.center_square_ship):
+                if self.alien_bullets_list[i].pic == self.ufo_bullet_pic:
+                    position = (self.position[0] + self.size[0] / 2) - self.alien_bullets_list[i].position[0]
+                    if len(self.ufo_bullets_posicions) < len(self.alien_bullets_list):
+                        self.ufo_bullets_posicions.append(position)
+                    elif len(self.ufo_bullets_posicions) == len(self.alien_bullets_list):
+                        self.ufo_bullets_posicions.sort()
+        print(self.ufo_bullets_posicions[0])
+        return self.ufo_bullets_posicions
+
+
     # -------------------------------------------------------------------------------------------------------------------
     ### UFO ###
     def ufo_exist(self):  # may_be_shot
         if len(self.ufos_target) > 0 and self.poder_atacar_dis():
             if self.get_ufo() is not None:
-                if self.get_ufo()[1].may_be_shot and self.get_ufo()[0][0] <= 150 and 123 <= self.get_ufo()[1].position[0] <= 837:
+                if len(self.aliens_list) == 0:
+                    if 123 <= self.get_ufo()[1].position[0] <= 837:
+                        return True
+                    else:
+                        return False
+                elif self.get_ufo()[1].may_be_shot and self.get_ufo()[0][0] <= 150 and 123 <= self.get_ufo()[1].position[0] <= 837:
                     return True
                 else:
                     return False
@@ -2138,6 +2052,10 @@ class Ship:
             for i in range(len(self.alien_bullets_list)):
                 if self.alien_bullets_list[i].pic == self.ufo_bullet_pic:
                     return True
+            if self.count_nega > 0:
+                self.count_nega = 0
+            if self.count_plus > 0:
+                self.count_plus = 0
             return False
         return False
 
@@ -2151,6 +2069,9 @@ class Ship:
             elif len(self.ufos_target) == len(self.ufo_positions_list):
                 self.ufo_positions_list.sort(key=lambda row: (row[0][0], row[0][0]))
         return self.ufo_positions_list[0]
+
+
+
 
     def atacar_ufo_mais_proximo(self):  # VERIFICAR
         if self.get_ufo()[1].from_side == 1:  # RIGHT
@@ -2243,14 +2164,6 @@ class Ship:
             return True
         else:
             return False
-
-    ### POWER-UPS ###
-    # self.alien_freeze = True - estão parados| False = estão a andar
-    # self.auto_fire = True - autofire esta ligado
-    # self.shield = True - shield esta ligado
-    # self.bullet_type = 2 - double fire
-    # self.bullet_type = 3 - triple fire
-    # self.rapid_fire = True os tiros são mais rapidos
 
     def behavior_with_powerups(self):
         if self.obter_alien_mais_proximo().hit_area is None:
@@ -2398,31 +2311,45 @@ class Ship:
     def calcular_afastamento(self):
         #### Necessario utilizar o lvl e self.aliens_list[0].move_delay, menor delay mais rapido o movimento
         if self.obter_alien_mais_proximo().position[1] <= 400:
-            x = ((500 * 10) / self.aliens_list[0].move_delay) + self.lvl * 2
+            x = ((500 * 10) / self.aliens_list[0].move_delay) + self.lvl * 3
             return x
         elif 400 < self.obter_alien_mais_proximo().position[1] <= 500:
-            x = ((500 * 10) / self.aliens_list[0].move_delay) + self.lvl * 2
+            x = ((500 * 10) / self.aliens_list[0].move_delay) + self.lvl * 3
             return x
         elif 500 < self.obter_alien_mais_proximo().position[1] <= 600:
-            x = ((500 * 10) / self.aliens_list[0].move_delay) + self.lvl * 2
+            x = ((500 * 10) / self.aliens_list[0].move_delay) + self.lvl * 3
             return x
         elif 600 < self.obter_alien_mais_proximo().position[1] <= 700:
-            x = ((500 * 10) / self.aliens_list[0].move_delay) + self.lvl * 2
+            x = ((500 * 10) / self.aliens_list[0].move_delay) + self.lvl * 3
             return x
         else:
             return 0
 
     def atacar_alien_mais_prox(self):
         # print(self.obter_alien_mais_proximo())
-        if len(self.aliens_list) == 0:
-            if self.position[0] + self.size[0]/2 > 500:
-                self.move_sides_esquerda()
-                self.disparar()
-            elif self.position[0] + self.size[0]/2 < 460:
-                self.move_sides_direita()
-                self.disparar()
+        if len(self.aliens_list) == 0 and not self.powerups_exist():
+            if self.bullet_type == 2 or self.bullet_type == 3: # and self.lvl != 4 and self.lvl != 8 and self.lvl != 12
+                if not self.left:
+                    self.move_sides_esquerda()
+                    self.disparar()
+                    if self.position[0] <= 150:
+                        self.left = True
+                        self.right = False
+                elif not self.right:
+                    self.move_sides_direita()
+                    self.disparar()
+                    if self.position[0] + self.size[0] >= 550:
+                        self.left = False
+                        self.right = True
             else:
-                self.disparar()
+                if self.position[0] + self.size[0]/2 > 500:
+                    self.move_sides_esquerda()
+                    self.disparar()
+                elif self.position[0] + self.size[0]/2 < 460:
+                    self.move_sides_direita()
+                    self.disparar()
+                else:
+                    self.disparar()
         else:
             if self.aliens_direction_right():
                 pos = ((500 * 10) / self.aliens_list[0].move_delay)
@@ -2495,10 +2422,20 @@ class Ship:
     # -------------------------------------------------------------------------------------------------------------------
     ### FUNÇÕES ###
     def disparar(self):
-        return self.shoot(pygame.time.get_ticks())
+        if self.shoot(pygame.time.get_ticks()):
+            self.play_sound(self.sound_gun)
+        #return
 
     def poder_atacar_dis_com_ufo_and_power(self):
         if self.shield:
+            if len(self.ufo_bullets_posicions) > 0:
+                self.ufo_bullets_posicions.clear()
+            if len(self.boss_bulets) > 0:
+                self.boss_bulets.clear()
+            if self.count_nega > 0:
+                self.count_nega = 0
+            if self.count_plus > 0:
+                self.count_plus = 0
             return True
         else:
             for i in range(len(self.alien_bullets_list)):
@@ -2506,28 +2443,70 @@ class Ship:
                         self.center_square_ship) or self.ufo_exist() or self.powerups_exist():
                     self.disparar()
                     return False
+            if len(self.ufo_bullets_posicions) > 0:
+                self.ufo_bullets_posicions.clear()
+            if len(self.boss_bulets) > 0:
+                self.boss_bulets.clear()
+            if self.count_nega > 0:
+                self.count_nega = 0
+            if self.count_plus > 0:
+                self.count_plus = 0
             return True
 
     def poder_atacar_dis(self):
         if self.shield:
-            if self.bullet_boss_pos is not None:
-                self.bullet_boss_pos = None
+            if len(self.ufo_bullets_posicions) > 0:
+                self.ufo_bullets_posicions.clear()
+            if len(self.boss_bulets) > 0:
+                self.boss_bulets.clear()
+            if self.count_nega > 0:
+                self.count_nega = 0
+            if self.count_plus > 0:
+                self.count_plus = 0
             return True
         else:
             for i in range(len(self.alien_bullets_list)):
                 if self.alien_bullets_list[i].rect.colliderect(self.center_square_ship):
                     self.disparar()
                     return False
-            if self.bullet_boss_pos is not None:
-                self.bullet_boss_pos = None
+            if len(self.ufo_bullets_posicions) > 0:
+                self.ufo_bullets_posicions.clear()
+            if len(self.boss_bulets) > 0:
+                self.boss_bulets.clear()
+            if self.count_nega > 0:
+                self.count_nega = 0
+            if self.count_plus > 0:
+                self.count_plus = 0
             return True
 
-    # def evitar_corner_trap(self):
-    #    if not self.poder_atacar_dis():
-    #        for i in range(len(self.alien_bullets_list)):
+    def complement_poder_atacar_dis(self):
+        if self.shield:
+            if len(self.ufo_bullets_posicions) > 0:
+                self.ufo_bullets_posicions.clear()
+            if len(self.boss_bulets) > 0:
+                self.boss_bulets.clear()
+            if self.count_nega > 0:
+                self.count_nega = 0
+            if self.count_plus > 0:
+                self.count_plus = 0
+            return False
+        else:
+            for i in range(len(self.alien_bullets_list)):
+                if self.alien_bullets_list[i].rect.colliderect(self.center_square_ship):
+                    self.disparar()
+                    return True
+            if len(self.ufo_bullets_posicions) > 0:
+                self.ufo_bullets_posicions.clear()
+            if len(self.boss_bulets) > 0:
+                self.boss_bulets.clear()
+            if self.count_nega > 0:
+                self.count_nega = 0
+            if self.count_plus > 0:
+                self.count_plus = 0
+            return False
+
 
     # -------------------------------------------------------------------------------------------------------------------
-
     def draw(self, screen):
         # alien size
         # if len(self.aliens_list) > 0:
@@ -2564,6 +2543,20 @@ class Ship:
         screen.blit(self.pic, self.position.astype(np.int16))
         if self.shield:
             screen.blit(self.shield_pic, self.shield_rect)
+
+
+
+    def play_sound(self, sound, channel=None):
+        # plays a game sound on the next channel (all channels used in order).
+        # if channel not specified, sounds will be missed as sometimes all channels are busy - rotates through channels.
+        if channel is None:
+            ch = pygame.mixer.Channel(self.channel_ship)
+            self.channel_ship += 1  # move to next channel
+            if self.channel_ship == self.channel_nr_ship:
+                self.channel_ship = 1
+        else:
+            ch = pygame.mixer.Channel(channel)
+        ch.play(sound)
 
     # ------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
