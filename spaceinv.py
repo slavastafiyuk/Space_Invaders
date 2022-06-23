@@ -2332,15 +2332,12 @@ class Ship:
     def calcular_afastamento(self):
         #### Necessario utilizar o lvl e self.aliens_list[0].move_delay, menor delay mais rapido o movimento
         if self.obter_alien_mais_proximo().position[1] <= 400:
-            x = ((500 * 10) / self.aliens_list[0].move_delay) + self.lvl * 3 + 15
-            return x
-        elif 400 < self.obter_alien_mais_proximo().position[1] <= 500:
             x = ((500 * 10) / self.aliens_list[0].move_delay) + self.lvl * 3 + 10
             return x
-        elif 500 < self.obter_alien_mais_proximo().position[1] <= 600:
+        elif 400 < self.obter_alien_mais_proximo().position[1] <= 500:
             x = ((500 * 10) / self.aliens_list[0].move_delay) + self.lvl * 3 + 5
             return x
-        elif 600 < self.obter_alien_mais_proximo().position[1] <= 700:
+        elif 500 < self.obter_alien_mais_proximo().position[1] <= 700:
             x = ((500 * 10) / self.aliens_list[0].move_delay) + self.lvl * 3
             return x
         else:
