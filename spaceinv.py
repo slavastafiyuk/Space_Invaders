@@ -1814,7 +1814,7 @@ class Ship:
     def move_sides_direita(self):
         screen_size = screen.get_size()
         if self.status in (
-                0, 1) and self.intersect_left_square_ship() == False and self.intersect_left_square_ship() == False:
+                0, 1) and self.intersect_right_square_ship() == False:
             self.position[0] += 1 * self.speed
             if self.position[0] < 0:
                 self.position[0] = 0
@@ -1828,7 +1828,7 @@ class Ship:
     def move_sides_esquerda(self):
         screen_size = screen.get_size()
         if self.status in (
-                0, 1) and self.intersect_left_square_ship() == False and self.intersect_left_square_ship() == False:
+                0, 1) and self.intersect_left_square_ship() == False:
             self.position[0] += -1 * self.speed
             if self.position[0] < 0:
                 self.position[0] = 0
@@ -1845,21 +1845,22 @@ class Ship:
                                             self.size[1])
         self.center_square_ship = pygame.Rect(self.position[0] - 26, self.position[1] - self.size[1] - 30,
                                               self.size[0] + 50, self.size[1] + 70)
+        # self.center_square_ship = pygame.Rect(self.position[0] - 32, self.position[1] - self.size[1] - 30,
+        #                                       self.size[0] + 65, self.size[1] + 70)
         # self.center_square_ship = pygame.Rect(self.position[0] - 27, self.position[1] - self.size[1], self.size[0] + 50, self.size[1] + 40)
         # self.center_square_ship = pygame.Rect(self.position[0] - 27, self.position[1] - self.size[1] - 10,
         #                                      self.size[0] + 50, self.size[1] + 50)
         self.mybehaviour.run()
 
     def defineBehaviourTree(self):
-        return Sequence(Selector(Sequence(Atomic(self.complement_poder_atacar_dis),
-                                          Atomic(self.desviar)),
-                                 Sequence(Atomic(self.poder_atacar_dis_com_ufo_and_power),
-                                          Atomic(self.atacar_alien_mais_prox)),
-                                 Sequence(Atomic(self.ufo_exist),
-                                          Atomic(self.atacar_ufo_mais_proximo)),
-                                 Sequence(Atomic(self.powerups_exist),
-                                          Atomic(self.get_powerup))
-                                 )
+        return Selector(Sequence(Atomic(self.complement_poder_atacar_dis),
+                                 Atomic(self.desviar)),
+                        Sequence(Atomic(self.poder_atacar_dis_com_ufo_and_power),
+                                 Atomic(self.atacar_alien_mais_prox)),
+                        Sequence(Atomic(self.ufo_exist),
+                                 Atomic(self.atacar_ufo_mais_proximo)),
+                        Sequence(Atomic(self.powerups_exist),
+                                 Atomic(self.get_powerup))
                         )
 
     ### SENSORES###
@@ -1942,28 +1943,31 @@ class Ship:
         screen_size = screen.get_size()
         if self.ufo_bullet_intersect():
             for i in range(len(self.get_ufo_bullets_positions())):
-                print("Bullet: " + str(self.get_ufo_bullets_positions()[i][1].position[0]) + " Mine: " + str(self.position[0]))
+                # print("Bullet: " + str(self.get_ufo_bullets_positions()[i][1].position[0]) + " Mine: " + str(self.position[0]))
                 if self.get_ufo_bullets_positions()[i][0] >= 0:
                     self.count_plus = + 1
-                    self.list_desviar.insert(0, self.get_ufo_bullets_positions()[i][1].position[0]) ## insert 0 para balas a direita tendo em conta que o maximo de balas são 2
+                    self.list_desviar.insert(0, self.get_ufo_bullets_positions()[i][1].position[
+                        0])  ## insert 0 para balas a direita tendo em conta que o maximo de balas são 2
                 elif self.get_ufo_bullets_positions()[i][0] < 0:
-                    self.list_desviar.insert(1, self.get_ufo_bullets_positions()[i][1].position[0]) ## insert 1 para balas a esquerda tendo em conta que o maximo de balas são 2
+                    self.list_desviar.insert(1, self.get_ufo_bullets_positions()[i][1].position[
+                        0])  ## insert 1 para balas a esquerda tendo em conta que o maximo de balas são 2
                     self.count_nega = + 1
-            print("POSITIVE: " + str(self.count_plus) + " NEGATIVE: " + str(self.count_nega))
-            if self.count_plus == self.count_nega:
+            # print("POSITIVE: " + str(self.count_plus) + " NEGATIVE: " + str(self.count_nega))
+            if self.count_plus > 0 and self.count_nega > 0:
                 pos = (self.list_desviar[0] + self.list_desviar[1]) / 2
-                if self.position[0] > pos + 2:
+                if self.position[0] > pos - 1:
                     self.move_sides_esquerda()
-                elif self.position[0] < pos - 2:
+                elif self.position[0] < pos + 1:
                     self.move_sides_direita()
             elif self.count_plus > self.count_nega:
                 self.move_sides_direita()
             elif self.count_plus < self.count_nega:
                 self.move_sides_esquerda()
         if self.lvl == 4:
-            if 0 < self.get_bullets_boss_positions() < 60:
+            # print(self.get_bullets_boss_positions())
+            if 0 < self.get_bullets_boss_positions():
                 self.move_sides_direita()
-            elif 0 > self.get_bullets_boss_positions() > -60:
+            elif 0 > self.get_bullets_boss_positions():
                 self.move_sides_esquerda()
         else:
             if self.projetil_esquerda() and not self.projetil_direita():
@@ -2127,7 +2131,7 @@ class Ship:
     ### POWERUPS ###
 
     def powerups_exist(self):
-        if len(self.powerups_in_game) > 0 and self.poder_atacar_dis() and self.ufo_bullets_exist() == False and self.bullet_type != 2:
+        if len(self.powerups_in_game) > 0 and self.poder_atacar_dis() and self.bullet_type != 2 and not self.ufo_bullets_exist():  # and self.ufo_bullets_exist() == False
             if self.get_powerup() is not None:
                 if 23 <= self.get_powerup_position().position[0] <= 937:
                     return True
@@ -2149,39 +2153,16 @@ class Ship:
         return self.powerups_position_list[0][1]
 
     def get_powerup(self):
-        if self.bullet_type == 2:
-            pos = abs((self.position[1] + self.size[1] - self.get_powerup_position().position[1]) * math.tan(35))
-            print(self.get_powerup_position().position[1])
-            print(pos)
-            if self.get_powerup_position().position[0] + self.get_powerup_position().size[0]/2 >= self.position[0] + self.size[0]/2:
-                if self.position[0] + self.size[0] / 2 < self.get_powerup_position().position[0] + self.get_powerup_position().size[0]/2 - pos - 3:
-                    self.move_sides_direita()
-                    self.disparar()
-                elif self.position[0] + self.size[0] / 2 < self.get_powerup_position().position[0] + self.get_powerup_position().size[0]/2 - pos + 3:
-                    self.move_sides_esquerda()
-                    self.disparar()
-                else:
-                    self.disparar()
-            elif self.get_powerup_position().position[0] + self.get_powerup_position().size[0]/2 < self.position[0] + self.size[0]/2:
-                if self.position[0] + self.size[0] / 2 < self.get_powerup_position().position[0] + self.get_powerup_position().size[0]/2 + pos - 3:
-                    self.move_sides_direita()
-                    self.disparar()
-                elif self.position[0] + self.size[0] / 2 < self.get_powerup_position().position[0] + self.get_powerup_position().size[0]/2 + pos + 3:
-                    self.move_sides_esquerda()
-                    self.disparar()
-                else:
-                    self.disparar()
+        if self.position[0] + self.size[0] / 2 < self.get_powerup_position().position[0] + \
+                self.get_powerup_position().size[0] / 2 - 3:
+            self.move_sides_direita()
+            self.disparar()
+        elif self.position[0] + self.size[0] / 2 > self.get_powerup_position().position[0] + \
+                self.get_powerup_position().size[0] / 2 + 3:
+            self.move_sides_esquerda()
+            self.disparar()
         else:
-            if self.position[0] + self.size[0] / 2 < self.get_powerup_position().position[0] + \
-                    self.get_powerup_position().size[0] / 2 - 3:
-                self.move_sides_direita()
-                self.disparar()
-            elif self.position[0] + self.size[0] / 2 > self.get_powerup_position().position[0] + \
-                    self.get_powerup_position().size[0] / 2 + 3:
-                self.move_sides_esquerda()
-                self.disparar()
-            else:
-                self.disparar()
+            self.disparar()
 
     def have_powerups(self):
         if self.alien_freeze or self.bullet_type == 2 or self.bullet_type == 3:
@@ -2208,19 +2189,23 @@ class Ship:
                 if not self.left:
                     self.move_sides_esquerda()
                     self.disparar()
-                    if self.position[0] >= 123:
-                        self.left = True
-                        self.right = False
-                    elif self.position[0] <= self.obter_alien_mais_proximo().size[0] / 2 - 150:
+                    # if self.position[0] >= 123:
+                    #    self.left = True
+                    #    self.right = False
+                    if self.position[0] <= (
+                            self.obter_alien_mais_proximo().position[0] + self.obter_alien_mais_proximo().size[
+                        0] / 2) - 150:
                         self.left = True
                         self.right = False
                 elif not self.right:
                     self.move_sides_direita()
                     self.disparar()
-                    if self.position[0] <= 837:
-                        self.left = False
-                        self.right = True
-                    if self.position[0] + self.size[0] >= self.obter_alien_mais_proximo().size[0] / 2 + 150:
+                    # if self.position[0] <= 837:
+                    #    self.left = False
+                    #    self.right = True
+                    if self.position[0] + self.size[0] >= (
+                            self.obter_alien_mais_proximo().position[0] + self.obter_alien_mais_proximo().size[
+                        0] / 2) + 150:
                         self.left = False
                         self.right = True
             ### FREEZE E TRIPLE FIRE ###
@@ -2290,20 +2275,20 @@ class Ship:
                 if not self.left:
                     self.move_sides_esquerda()
                     self.disparar()
-                    if self.position[0] >= 123:
-                        self.left = True
-                        self.right = False
-                    elif self.position[0] <= self.obter_alien_mais_proximo().position[0] + \
+                    # if self.position[0] >= 123:
+                    #    self.left = True
+                    #    self.right = False
+                    if self.position[0] <= self.obter_alien_mais_proximo().position[0] + \
                             self.obter_alien_mais_proximo().size[0] / 2 - 150:
                         self.left = True
                         self.right = False
                 elif not self.right:
                     self.move_sides_direita()
                     self.disparar()
-                    if self.position[0] <= 837:
-                        self.left = False
-                        self.right = True
-                    elif self.position[0] + self.size[0] >= self.obter_alien_mais_proximo().position[0] + \
+                    # if self.position[0] <= 837:
+                    #    self.left = False
+                    #    self.right = True
+                    if self.position[0] + self.size[0] >= self.obter_alien_mais_proximo().position[0] + \
                             self.obter_alien_mais_proximo().size[0] / 2 + 150:
                         self.left = False
                         self.right = True
@@ -2565,8 +2550,8 @@ class Ship:
         # pygame.draw.rect(screen, (255, 0, 0),
         #                 pygame.Rect(self.position[0] - self.size[0], self.position[1] - 20, self.size[0], self.size[1] + 20))
         # Retangulo central
-        # pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(self.position[0] - 26, self.position[1] - self.size[1] - 30,
-        #                                        self.size[0] + 50, self.size[1] + 70))
+        # pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(self.position[0] - 32, self.position[1] - self.size[1] - 30,
+        #                                        self.size[0] + 65, self.size[1] + 70))
         # Linha direita
         # pygame.draw.line(screen, (255, 0, 0), (self.position[0] + self.size[0] + 5, self.position[1] + 50),
         #                 (self.position[0] + self.size[0] + 5, self.position[1] - 100))
