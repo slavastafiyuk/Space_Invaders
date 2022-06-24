@@ -1915,10 +1915,6 @@ class Ship:
             return True
         elif self.projetil_esquerda() == True and self.shield == False:
             return True
-        elif self.sensor_line_esquerda() == True and self.shield == False:
-            return True
-        elif self.sensor_line_direita() == True and self.shield == False:
-            return True
         else:
             return False
 
@@ -2131,7 +2127,7 @@ class Ship:
     ### POWERUPS ###
 
     def powerups_exist(self):
-        if len(self.powerups_in_game) > 0 and self.poder_atacar_dis() and self.bullet_type != 2 and not self.ufo_bullets_exist():  # and self.ufo_bullets_exist() == False
+        if len(self.powerups_in_game) > 0 and self.poder_atacar_dis() and self.bullet_type != 2 and self.ufo_bullets_exist() == False:  # and self.ufo_bullets_exist() == False
             if self.get_powerup() is not None:
                 if 23 <= self.get_powerup_position().position[0] <= 937:
                     return True
@@ -2445,7 +2441,7 @@ class Ship:
         # return
 
     def poder_atacar_dis_com_ufo_and_power(self):
-        if self.shield:
+        if self.shield and not self.ufo_exist() and not self.powerups_exist():
             if len(self.ufo_bullets_posicions) > 0:
                 self.ufo_bullets_posicions.clear()
             if len(self.boss_bulets) > 0:
