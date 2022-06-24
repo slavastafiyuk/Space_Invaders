@@ -1943,13 +1943,13 @@ class Ship:
                 if self.get_ufo_bullets_positions()[i][0] >= 0:
                     self.count_plus = + 1
                     self.list_desviar.insert(0, self.get_ufo_bullets_positions()[i][1].position[
-                        0])  ## insert 0 para balas a direita tendo em conta que o maximo de balas são 2
+                        0])  ## insert 0 para balas a esquerda tendo em conta que o maximo de balas são 2
                 elif self.get_ufo_bullets_positions()[i][0] < 0:
                     self.list_desviar.insert(1, self.get_ufo_bullets_positions()[i][1].position[
-                        0])  ## insert 1 para balas a esquerda tendo em conta que o maximo de balas são 2
+                        0])  ## insert 1 para balas a direita tendo em conta que o maximo de balas são 2
                     self.count_nega = + 1
             # print("POSITIVE: " + str(self.count_plus) + " NEGATIVE: " + str(self.count_nega))
-            if self.count_plus > 0 and self.count_nega > 0:
+            if self.count_plus == self.count_nega:
                 pos = (self.list_desviar[0] + self.list_desviar[1]) / 2
                 if self.position[0] > pos - 1:
                     self.move_sides_esquerda()
@@ -2000,7 +2000,7 @@ class Ship:
     def get_bullets_boss_positions(self):
         for i in range(len(self.alien_bullets_list)):
             if self.alien_bullets_list[i].rect.colliderect(self.center_square_ship):
-                position = (self.position[0] + self.size[0] / 2) - self.alien_bullets_list[i].position[0]
+                position = (self.position[0] + self.size[0] / 2) - (self.alien_bullets_list[i].position[0] + self.alien_bullets_list[i].size[0])
                 if len(self.boss_bulets) < len(self.alien_bullets_list):
                     self.boss_bulets.append(position)
                 elif len(self.boss_bulets) == len(self.alien_bullets_list):
@@ -2019,7 +2019,7 @@ class Ship:
         for i in range(len(self.alien_bullets_list)):
             if self.alien_bullets_list[i].rect.colliderect(self.center_square_ship):
                 if self.alien_bullets_list[i].pic == self.ufo_bullet_pic:
-                    position = (self.position[0] + self.size[0] / 2) - self.alien_bullets_list[i].position[0]
+                    position = (self.position[0] + self.size[0] / 2) - self.alien_bullets_list[i].position[0] + self.alien_bullets_list[i].size[0]
                     if len(self.ufo_bullets_posicions) < len(self.alien_bullets_list):
                         self.ufo_bullets_posicions.append([position, self.alien_bullets_list[i]])
                     elif len(self.ufo_bullets_posicions) == len(self.alien_bullets_list):
@@ -2031,12 +2031,12 @@ class Ship:
     def ufo_exist(self):  # may_be_shot
         if len(self.ufos_target) > 0 and self.poder_atacar_dis():
             if self.get_ufo() is not None:
-                if len(self.aliens_list) == 0:
-                    if 123 <= self.get_ufo()[1].position[0] <= 837:
-                        return True
-                    else:
-                        return False
-                elif self.get_ufo()[1].may_be_shot and self.get_ufo()[0][0] <= 150 and 123 <= \
+                #if len(self.aliens_list) == 0:
+                #    if 123 <= self.get_ufo()[1].position[0] <= 837:
+                #        return True
+                #    else:
+                #        return False
+                if self.get_ufo()[1].may_be_shot and self.get_ufo()[0][0] <= 150 and 123 <= \
                         self.get_ufo()[1].position[0] <= 837:
                     return True
                 else:
@@ -2069,15 +2069,16 @@ class Ship:
         if len(self.ufo_positions_list) > 0:
             self.ufo_positions_list.pop(0)
         for i in range(len(self.ufos_target)):
-            position_result = abs(self.ufos_target[i].position - self.position)
+            position_result = abs((self.ufos_target[i].position+self.ufos_target[i].size/2) - (self.position + self.size/2))
+            #print(position_result)
             if len(self.ufo_positions_list) < len(self.ufos_target):
                 self.ufo_positions_list.append([position_result, self.ufos_target[i]])
             elif len(self.ufos_target) == len(self.ufo_positions_list):
                 self.ufo_positions_list.sort(key=lambda row: (row[0][0], row[0][0]))
         return self.ufo_positions_list[0]
 
-    def atacar_ufo_mais_proximo(self):  # VERIFICAR
-        if self.get_ufo()[1].from_side == 1:  # RIGHT
+    def atacar_ufo_mais_proximo(self):
+        if self.get_ufo()[1].from_side == 1:  # DIREITA
             if self.position[0] + self.size[0] / 2 < self.get_ufo()[1].position[0] + self.get_ufo()[1].size[
                 0] + 150 - 5:
                 self.move_sides_direita()
@@ -2086,7 +2087,7 @@ class Ship:
                 self.move_sides_esquerda()
             else:
                 self.disparar()
-        elif self.get_ufo()[1].from_side == -1:  # LEFT
+        elif self.get_ufo()[1].from_side == -1:  # ESQUERDA
             if self.position[0] + self.size[0] / 2 < self.get_ufo()[1].position[0] - 150 - 5:
                 self.move_sides_direita()
             elif self.position[0] + self.size[0] / 2 > self.get_ufo()[1].position[0] - 150 + 5:
@@ -2259,10 +2260,10 @@ class Ship:
             ### FREEZE ###
             if self.alien_freeze and self.bullet_type == 1:  # and self.bullet_type == 1
                 if self.position[0] + self.size[0] / 2 < self.obter_alien_mais_proximo().position[0] + \
-                        self.obter_alien_mais_proximo().size[0] / 2 - 3:
+                        self.obter_alien_mais_proximo().size[0] / 2 - 5:
                     self.move_sides_direita()
                 elif self.position[0] + self.size[0] / 2 > self.obter_alien_mais_proximo().position[0] + \
-                        self.obter_alien_mais_proximo().size[0] / 2 + 3:
+                        self.obter_alien_mais_proximo().size[0] / 2 + 5:
                     self.move_sides_esquerda()
                 else:
                     self.disparar()
